@@ -1,10 +1,10 @@
-import type { GetPokemonsGatewayPort } from "../ports/get-pokemons.gateway.port"
+import type { GetPokemonsGatewayPort } from "../ports/get-pokemons.gateway.port";
 
 export const getPokemonsHandler = async (gateway: GetPokemonsGatewayPort) => {
-  const response = await gateway.getPokemons()
+  const response = await gateway.getPokemons();
 
   return response.results.map((pokemon) => ({
     name: pokemon.name,
-    url: pokemon.url
-  }))
-}
+    url: pokemon.url,
+  }));
+};

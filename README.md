@@ -1,73 +1,23 @@
-# React + TypeScript + Vite
+# State Management Hexagonal POC
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- **Domain** (core) exposes use cases and ports only.
+- **Secondary adapters** implement those ports (e.g., HTTP fetch of Pokémons). This holds real gateway implementation and in-memory implementations of the ports.
+- **Primary adapters** consume the domain through React Query (server-state port) and Zustand (client/UI port).
+- **React Context** provides the wiring of the port implementations to the component tree.
 
-Currently, two official plugins are available:
+## Why React Query + Zustand Ports
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Port-specialisation** – React Query owns fetch/caching/invalidation (server-state), while Zustand holds tiny bits of UI intent. Each adapter has a single reason to change.
+- **Hexagonal clarity** – UI hooks call `getPokemonsHandler` with injected ports implementations from the Context. Nothing in React components imports secondary adapters directly.
+- **Testability** – Specs can inject in-memory gateways through the Context Provider.
+- **Locality** – Hooks expose `{ state, actions }` tailored for screens. Components remain dumb, and any additional UI-only state can live in isolated Zustand stores without touching global caches.
 
-## React Compiler
+## Why Not a “Manager” Component Context
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Manual cache plumbing** – You’d reimplement stale handling, retries, deduplication, etc., that React Query already provides and battle race conditions yourself.
 
-## Expanding the ESLint configuration
+## Why Prefer This Over Redux Here
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Less boilerplate** – No slices, action creators, selectors, or thunks. Hooks call the domain use case, and React Query tracks status.
+- **Explicit dependencies** – Dependencies are injected through a provider, making overrides trivial.
+- **UI/control separation** – Zustand handles tiny UI flags (e.g., “has the user requested data?”) without polluting global Redux state or dispatching meaningless actions.
