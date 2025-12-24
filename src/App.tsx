@@ -1,22 +1,26 @@
-
-import './App.css'
-import { usePokemonsScreen } from './adapters/primary/ui/pokemons/usePokemonsScreen'
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import "./App.css";
+import { ComponentA } from "./adapters/primary/ui/components/ComponentA";
+import { CreatePokemon } from "./adapters/primary/ui/pages/CreatePokemon/CreatePokemon";
+import { PokemonsList } from "./adapters/primary/ui/pages/PokemonList/PokemonsList";
 
 function App() {
-  const { state: { error, isLoading, pokemons }, actions: { load } } = usePokemonsScreen()
-
   return (
-      <main>
-        <button onClick={load}>Get Pokemons</button>
-        {error && <p>{error}</p>}
-        {isLoading && <p>Loading...</p>}
-        {pokemons.length > 0 && <ul>
-          {pokemons.map((pokemon) => (
-            <li key={pokemon.name}>{pokemon.name}</li>
-          ))}
-        </ul>}
-      </main>
-  )
+    <BrowserRouter>
+      <nav>
+        <Link to="/">Pokemons List</Link>
+        <br />
+        <Link to="/component-a">Component A</Link>
+        <br />
+        <Link to="/create-pokemon">Create Pokemon</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<PokemonsList />} />
+        <Route path="/component-a" element={<ComponentA />} />
+        <Route path="/create-pokemon" element={<CreatePokemon />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

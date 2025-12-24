@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import { getPokemonsHandler } from './index'
-import { inMemoryPokemonsGateway } from '../../adapters/secondary/pokemons/in-memory-pokemons.gateway'
+import { inMemoryPokemonsGateway } from '../../../adapters/secondary/pokemons/in-memory-pokemons.gateway'
 
 describe('getPokemonsHandler', () => {
   it('should return the pokemons', async () => {
